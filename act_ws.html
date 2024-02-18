@@ -85,89 +85,40 @@
                 ]
             },])
     </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="cdnError(this)"/>
+    <link rel="icon" type="image/x-icon" href="resources/relink.ico">
+    <link rel="stylesheet" href="resources/gbf_act.css">
 </head>
-<style>
-    [v-cloak] {
-        display: none;
-    }
-
-    body {
-        font-family: -apple-system,
-        'Nimbus Roman No9 L',
-        'PingFang SC Regular',
-        'Hiragino Sans GB',
-        'Microsoft Yahei',
-        'WenQuanYi Micro Hei',
-        'ST Heiti', sans-serif
-    }
-
-    ::-webkit-scrollbar {
-        width: 5px;
-        height: 5px;
-        background-color: #F5F5F5;
-    }
-
-    ::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 6px rgb(93, 93, 93);
-        border-radius: 10px;
-        background-color: #F5F5F5;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        border-radius: 10px;
-        -webkit-box-shadow: inset 0 0 6px rgba(166, 166, 166, 0.3);
-        background-color: rgb(234, 234, 234);
-    }
-
-    .main-0 {
-        display: table;
-        position: absolute;
-        height: 100%;
-        width: 100%;
-    }
-
-    .main-1 {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    .main-2 {
-        width: 1000px;
-        max-width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-</style>
 <body>
 <div id="app" class="main-0">
     <div class="main-1" v-cloak>
         <div class="main-2" v-if="0">
             resource is loading, please wait...
         </div>
-        <div class="main-2 shadow rounded p-3" v-cloak>
+        <div class="main-2 rounded p-3" v-cloak>
             <div v-if="!is_socket_connected" class="p-3">
-                <el-alert title="socket is not connect, check inject status" type="error" effect="dark" :closable="false"></el-alert>
+                <el-alert title="Socket not connected, please (re)launch 'act_ws.py'" type="error" effect="dark" :closable="false"></el-alert>
             </div>
 
             <el-dialog v-model="actor_dialog.visible" :title="actor_dialog.actor?actor_dialog.actor.name:''" width="800">
                 <el-tabs
                         v-model="actor_dialog.page"
-                        type="card"
+                        type="border-card"
                 >
-                    <el-tab-pane label="targets" name="targets">
+                    <el-tab-pane label="targets" name="Target(s)">
                         <el-table :data="Object.values(actor_dialog.actor.targets)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
-                            <el-table-column prop="name" label="name"></el-table-column>
-                            <el-table-column prop="damage" label="damage" sortable></el-table-column>
+                            <el-table-column prop="name" label="Name"></el-table-column>
+                            <el-table-column prop="damage" label="Total Damage" sortable></el-table-column>
                         </el-table>
                     </el-tab-pane>
-                    <el-tab-pane label="actions" name="actions">
+                    <el-tab-pane label="actions" name="Actions">
                         <el-table :data="Object.values(actor_dialog.actor.actions)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
-                            <el-table-column prop="name" label="name"></el-table-column>
-                            <el-table-column prop="hit" label="hit" sortable></el-table-column>
-                            <el-table-column prop="damage" label="damage" sortable></el-table-column>
-                            <el-table-column prop="min" label="min" sortable></el-table-column>
-                            <el-table-column prop="max" label="max" sortable></el-table-column>
-                            <el-table-column label="damage(avg)">
+                            <el-table-column prop="name" label="Name"></el-table-column>
+                            <el-table-column prop="hit" label="Hit" sortable></el-table-column>
+                            <el-table-column prop="damage" label="Damage" sortable></el-table-column>
+                            <el-table-column prop="min" label="Min" sortable></el-table-column>
+                            <el-table-column prop="max" label="Max" sortable></el-table-column>
+                            <el-table-column label="Damage (avg)">
                                 <template #default="scope">
                                     <span v-if="scope.row.hit > 0">{{Math.floor(scope.row.damage / scope.row.hit)}}</span>
                                 </template>
@@ -179,31 +130,38 @@
 
             <el-tabs
                     v-model="view_record_value"
-                    type="card"
+                    type="border-card"
                     closable @tab-remove="remove_record"
             >
                 <el-tab-pane
                         v-for="item in records" :key="item.name" :label="item.last_record_at?`${item.name} [${fmt_time(item.last_record_at-item.time)}]`:item.name" :name="item.name"
                 >
                     <el-table :data="Object.values(item.actors)" style="width: 100%" :default-sort="{ prop: 'dps', order: 'descending' }">
-                        <el-table-column prop="name" label="name">
+                        <el-table-column prop="name" label="Name">
                             <template #default="scope">
                                 <span>
                                     <el-icon :style="{'color':scope.row.color}"><Avatar/></el-icon> {{ scope.row.name }}
                                 </span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="damage" label="damage" sortable></el-table-column>
-                        <el-table-column prop="damage_in_minute" label="damage_in_minute" sortable></el-table-column>
-                        <el-table-column prop="dps" label="dps" sortable></el-table-column>
-                        <el-table-column prop="dps_in_minute" label="dps_in_minute" sortable></el-table-column>
-                        <el-table-column label="detail">
+                        <el-table-column prop="damage" label="Damage" sortable></el-table-column>
+                        <el-table-column prop="damage_in_minute" label="Damage (last 60s)" sortable></el-table-column>
+                        <el-table-column prop="dps" label="DPS" sortable></el-table-column>
+                        <el-table-column prop="dps_in_minute" label="DPS (last 60s)" sortable></el-table-column>
+                        <el-table-column label="Details">
                             <template #default="scope">
                                 <el-button @click="set_actor_dialog(scope.row)" type="text" size="small">detail</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
                     </el-table>
+                    <div class="main-2" style="margin-top: 4px; text-align: center;">
+                        <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#dps_graph" aria-expanded="false" aria-controls="collapseExample">
+                            <span class="material-symbols-outlined" style="color: #66BB6A;">
+                                expand_more
+                            </span>
+                          </button>
+                    </div>
                     <div v-if="item.show_chart">
                         <canvas :ref="el => { item.canvas = el }" height="500"></canvas>
                     </div>
@@ -226,27 +184,27 @@
         .filter(off => val & (1 << off));
 
     const actor_names = {
-        0x9498420d: "姬塔",
-        0x26a4848a: "古兰",
-        0xc3155079: "赛达",
-        0x34d4fd8f: "卡塔莉娜",
-        0xf8d73d33: "拉卡姆",
-        0x7b5934ad: "伊欧",
-        0x443d46bb: "欧根",
-        0xa9d6569e: "萝赛塔",
-        0x2b4aa114: "夏洛特",
-        0xbcc238de: "冈达葛萨",
-        0xfba6615d: "菲莉",
-        0x601aa977: "娜露梅",
-        0x63a7c3f0: "兰斯洛特",
-        0xf96a90c2: "巴恩",
-        0x28ac1108: "珀西瓦尔",
-        0x94e2514e: "齐格飞",
-        0x6fdd6932: "卡莉奥丝特罗",
-        0xc97f3365: "尤达哈拉",
-        0xd16cfbde: "巴萨拉卡",
-        0x8056abcd: "伊德",
-        0xf5755c0e: "伊德（龙人化）",
+        0x9498420d: "Djeeta",
+        0x26a4848a: "Gran",
+        0xc3155079: "Zeta",
+        0x34d4fd8f: "Katalina",
+        0xf8d73d33: "Rackam",
+        0x7b5934ad: "Io",
+        0x443d46bb: "Eugen",
+        0xa9d6569e: "Rosetta",
+        0x2b4aa114: "Charlotta",
+        0xbcc238de: "Ghandagoza",
+        0xfba6615d: "Ferry",
+        0x601aa977: "Narumeia",
+        0x63a7c3f0: "Lancelot",
+        0xf96a90c2: "Vane",
+        0x28ac1108: "Percival",
+        0x94e2514e: "Siegfried",
+        0x6fdd6932: "Cagliostro",
+        0xc97f3365: "Yodarha",
+        0xd16cfbde: "Vaseraga",
+        0x8056abcd: "Id",
+        0xf5755c0e: "Id (Dragon Form)",
     }
     var socket = null;
 
