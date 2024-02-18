@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Remote</title>
+    <title>GBFR DPS</title>
     <script>
         const cdn_loader = (async (data) => {
             for (const {key, type, choices} of data) await new Promise((resolve, reject) => {
@@ -103,15 +103,15 @@
             <el-dialog v-model="actor_dialog.visible" :title="actor_dialog.actor?actor_dialog.actor.name:''" width="800">
                 <el-tabs
                         v-model="actor_dialog.page"
-                        type="border-card"
+                        type="border-card" 
                 >
-                    <el-tab-pane label="targets" name="Target(s)">
+                    <el-tab-pane name="targets" label="Target(s)">
                         <el-table :data="Object.values(actor_dialog.actor.targets)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
                             <el-table-column prop="name" label="Name"></el-table-column>
                             <el-table-column prop="damage" label="Total Damage" sortable></el-table-column>
                         </el-table>
                     </el-tab-pane>
-                    <el-tab-pane label="actions" name="Actions">
+                    <el-tab-pane name="actions" label="Actions">
                         <el-table :data="Object.values(actor_dialog.actor.actions)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
                             <el-table-column prop="name" label="Name"></el-table-column>
                             <el-table-column prop="hit" label="Hit" sortable></el-table-column>
@@ -132,6 +132,7 @@
                     v-model="view_record_value"
                     type="border-card"
                     closable @tab-remove="remove_record"
+                    class="no-pad"
             >
                 <el-tab-pane
                         v-for="item in records" :key="item.name" :label="item.last_record_at?`${item.name} [${fmt_time(item.last_record_at-item.time)}]`:item.name" :name="item.name"
@@ -150,7 +151,7 @@
                         <el-table-column prop="dps_in_minute" label="DPS (last 60s)" sortable></el-table-column>
                         <el-table-column label="Details">
                             <template #default="scope">
-                                <el-button @click="set_actor_dialog(scope.row)" type="text" size="small">detail</el-button>
+                                <el-button @click="set_actor_dialog(scope.row)" type="text" size="small">OPEN</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -162,7 +163,7 @@
                             </span>
                           </button>
                     </div>
-                    <div v-if="item.show_chart">
+                    <div v-if="item.show_chart" style="margin-top: 0px; padding-top: 0px; padding-bottom: 12px;" class="collapse" id="dps_graph">
                         <canvas :ref="el => { item.canvas = el }" height="500"></canvas>
                     </div>
                 </el-tab-pane>
@@ -242,10 +243,18 @@
                         x: {
                             type: 'linear',
                             position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Time (seconds)',
+                            }
                         },
                         y: {
                             //beginAtZero: true,
                             position: 'left',
+                            title: {
+                                display: true,
+                                text: 'DPS',
+                            }
                         }
                     },
                     animation: {

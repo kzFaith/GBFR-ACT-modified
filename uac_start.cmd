@@ -18,4 +18,4 @@ for /f "delims=" %%i in ('where python') do (
 
 :end
 endlocal
-exit
+pause

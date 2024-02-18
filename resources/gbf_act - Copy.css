@@ -49,6 +49,11 @@ body {
     }
 
     :root{
+        --el-bg-color: #42424200;
+        --el-bg-color-overlay: #42424230;
+        --el-text-color-regular: #9E9E9E;
+        --el-border-color-lighter: #9E9E9E;
+        --el-fill-color-light: #212121;
         --el-border-color: ##212121;
         --el-border-color-light: #004cff00;
         --el-color-primary: #66BB6A;
@@ -57,23 +62,9 @@ body {
 
     .el-tabs{
         box-shadow: var(--bs-box-shadow)!important;
-        --el-bg-color: #42424200;
-        --el-bg-color-overlay: #42424230;
-        --el-text-color-regular: #9E9E9E;
-        --el-border-color-lighter: #9E9E9E;
-        --el-fill-color-light: #212121;
     }
 
-    .el-dialog{
-        --el-bg-color: #212121;
-
-    }
-
-    .el-dialog__title{
-        color: #66BB6A;
-    }
-
-    .no-pad > .el-tabs__content{
+    .el-tabs--border-card > .el-tabs__content{
         padding-bottom: 0px
     }
 
