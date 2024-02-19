@@ -86,6 +86,7 @@
             },])
     </script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="cdnError(this)"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="icon" type="image/x-icon" href="resources/relink.ico">
     <link rel="stylesheet" href="resources/gbf_act.css">
 </head>
@@ -110,7 +111,7 @@
                             <el-table-column prop="name" label="Name"></el-table-column>
                             <el-table-column prop="damage" label="Total Damage" sortable>
                                 <template #default="{ row }">
-                                    {{ row.damage.toLocaleString() }}
+                                    {{row.damage.toLocaleString()}}
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -121,17 +122,17 @@
                             <el-table-column prop="hit" label="Hits" sortable></el-table-column>
                             <el-table-column prop="damage" label="Damage" sortable>
                                 <template #default="{ row }">
-                                    {{ row.damage.toLocaleString() }}
+                                    {{row.damage.toLocaleString()}}
                                 </template>
                             </el-table-column>
                             <el-table-column prop="min" label="Min" sortable>
                                 <template #default="{ row }">
-                                    {{ row.min.toLocaleString() }}
+                                    {{row.min.toLocaleString()}}
                                 </template>
                             </el-table-column>
                             <el-table-column prop="max" label="Max" sortable>
                                 <template #default="{ row }">
-                                    {{ row.max.toLocaleString() }}
+                                    {{row.max.toLocaleString()}}
                                 </template>
                             </el-table-column>
                             <el-table-column label="Damage (avg)">
@@ -163,27 +164,22 @@
                         </el-table-column>
                         <el-table-column prop="damage" label="Damage" sortable>
                             <template #default="{ row }">
-                                {{ row.damage.toLocaleString() }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="damage_in_minute" label="Damage (Last 60s)" sortable>
-                            <template #default="{ row }">
-                                {{ row.damage_in_minute.toLocaleString() }} 
+                                {{row.damage.toLocaleString()}} ({{(row.total_damage_percentage * 100).toLocaleString(undefined, {maximumFractionDigits:1}) }}%)
                             </template>
                         </el-table-column>
                         <el-table-column prop="dps" label="DPS" sortable>
                             <template #default="{ row }">
-                                {{ row.dps.toLocaleString() }}
+                                {{row.dps.toLocaleString()}}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="dps_in_minute" label="DPS (Last 60s)" sortable>
-                            <template #default="{ row }">
-                                {{ row.dps_in_minute.toLocaleString() }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="Details">
+                        
+                        <el-table-column label="Breakdown">
                             <template #default="scope">
-                                <el-button @click="set_actor_dialog(scope.row)" type="text" size="small">OPEN</el-button>
+                                <el-button @click="set_actor_dialog(scope.row)">
+                                    <span class="material-symbols-outlined" style="color: #66BB6A;">
+                                        open_in_new
+                                    </span>
+                                </el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -398,6 +394,7 @@
                         name: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
                         time: now.getTime(),
                         last_record_at: 0,
+                        total_damage: 0,
                         actors: {},
                         events_in_minute: [],
                         canvas: null,
@@ -418,6 +415,7 @@
                             name: `[${party_idx}]${actor_names[source_id] || numberToHexStringWithZFill(source_id, 8)}#${source_idx}`,
                             color: colors[party_idx], // assume no more than 6 actors
                             damage: 0,
+                            total_damage_percentage: 0,
                             damage_in_minute: 0,
                             dps: 0,
                             dps_in_minute: 0,
@@ -440,10 +438,10 @@
                     let k;
                     switch (action_id) {
                         case -1:
-                            k = 'link'
+                            k = 'Link Attack'
                             break
                         case -2:
-                            k = 'LB'
+                            k = 'Ougi'
                             break
                         case -3:
                             k = '追击'
@@ -480,6 +478,10 @@
                     });
                     actor.damage += damage;
                     actor.damage_in_minute += damage;
+                    current_record.total_damage += damage;
+                    Object.values(current_record.actors).forEach(actor => {
+                        actor.total_damage_percentage = actor.damage / current_record.total_damage;
+                    });
                     const target_actor = get_actor_target(actor, target_idx, target_id);
                     target_actor.damage += damage;
                     const action = get_actor_action(actor, flags & (1 << 15) ? -3 : action_id);
@@ -516,7 +518,7 @@
                         actor.dps = Math.floor(actor.damage / full_time);
                         actor.dps_in_minute = Math.floor(actor.damage_in_minute / full_time_in_minute);
                     }
-                    if (real_time > 10) {
+                    if (real_time > 0) {
                         current_record.show_chart = true;
                         if (current_record.canvas && last_chart_evt !== current_record.last_record_at) {
                             if (!dpsCharts[current_record.name]) dpsCharts[current_record.name] = new DpsChart(current_record.canvas);
@@ -529,7 +531,6 @@
                         }
                     }
                 }
-
 
                 const update = () => {
                     const current_record = get_latest_record();
@@ -573,17 +574,6 @@
                     });
                 }
 
-               // const calculatePercent = (damage) => {
-                    // Calculate damage within current record.
-                  //  const totalDamage = records.value.reduce((total, current_record) => {
-                    //    return total + Object.values(current_record.actors).reduce((acc, actor) => acc + actor.damage, 0);
-                   // }, 0);
-
-                    // Calculate percentage
-                   // const dmgPercent = totalDamage === 0 ? 0 : ((damage / totalDamage) * 100).toFixed(1);
-
-                   // return `${dmgPercent}%`;
-              //  };
 
                 Vue.onMounted(() => {
                     update_period = 1000;
@@ -605,7 +595,6 @@
                     remove_record,
                     actor_dialog,
                     set_actor_dialog,
-                    calculatePercent,
                 }
             }
         })
