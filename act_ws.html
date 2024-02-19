@@ -108,19 +108,35 @@
                     <el-tab-pane name="targets" label="Target(s)">
                         <el-table :data="Object.values(actor_dialog.actor.targets)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
                             <el-table-column prop="name" label="Name"></el-table-column>
-                            <el-table-column prop="damage" label="Total Damage" sortable></el-table-column>
+                            <el-table-column prop="damage" label="Total Damage" sortable>
+                                <template #default="{ row }">
+                                    {{ row.damage.toLocaleString() }}
+                                </template>
+                            </el-table-column>
                         </el-table>
                     </el-tab-pane>
                     <el-tab-pane name="actions" label="Actions">
                         <el-table :data="Object.values(actor_dialog.actor.actions)" style="width: 100%" :default-sort="{ prop: 'damage', order: 'descending' }">
-                            <el-table-column prop="name" label="Name"></el-table-column>
-                            <el-table-column prop="hit" label="Hit" sortable></el-table-column>
-                            <el-table-column prop="damage" label="Damage" sortable></el-table-column>
-                            <el-table-column prop="min" label="Min" sortable></el-table-column>
-                            <el-table-column prop="max" label="Max" sortable></el-table-column>
+                            <el-table-column prop="name" label="Attack"></el-table-column>
+                            <el-table-column prop="hit" label="Hits" sortable></el-table-column>
+                            <el-table-column prop="damage" label="Damage" sortable>
+                                <template #default="{ row }">
+                                    {{ row.damage.toLocaleString() }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="min" label="Min" sortable>
+                                <template #default="{ row }">
+                                    {{ row.min.toLocaleString() }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="max" label="Max" sortable>
+                                <template #default="{ row }">
+                                    {{ row.max.toLocaleString() }}
+                                </template>
+                            </el-table-column>
                             <el-table-column label="Damage (avg)">
                                 <template #default="scope">
-                                    <span v-if="scope.row.hit > 0">{{Math.floor(scope.row.damage / scope.row.hit)}}</span>
+                                    <span v-if="scope.row.hit > 0">{{Math.floor(scope.row.damage / scope.row.hit).toLocaleString()}}</span>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -145,10 +161,26 @@
                                 </span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="damage" label="Damage" sortable></el-table-column>
-                        <el-table-column prop="damage_in_minute" label="Damage (last 60s)" sortable></el-table-column>
-                        <el-table-column prop="dps" label="DPS" sortable></el-table-column>
-                        <el-table-column prop="dps_in_minute" label="DPS (last 60s)" sortable></el-table-column>
+                        <el-table-column prop="damage" label="Damage" sortable>
+                            <template #default="{ row }">
+                                {{ row.damage.toLocaleString() }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="damage_in_minute" label="Damage (Last 60s)" sortable>
+                            <template #default="{ row }">
+                                {{ row.damage_in_minute.toLocaleString() }} 
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="dps" label="DPS" sortable>
+                            <template #default="{ row }">
+                                {{ row.dps.toLocaleString() }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="dps_in_minute" label="DPS (Last 60s)" sortable>
+                            <template #default="{ row }">
+                                {{ row.dps_in_minute.toLocaleString() }}
+                            </template>
+                        </el-table-column>
                         <el-table-column label="Details">
                             <template #default="scope">
                                 <el-button @click="set_actor_dialog(scope.row)" type="text" size="small">OPEN</el-button>
@@ -508,6 +540,7 @@
                     if (update_period > 0) setTimeout(update, update_period);
                 }
 
+
                 const create_socket = () => {
                     const socket_ = new WebSocket("ws://localhost:24399");
                     socket_.addEventListener("message", evt_ => {
@@ -540,6 +573,18 @@
                     });
                 }
 
+               // const calculatePercent = (damage) => {
+                    // Calculate damage within current record.
+                  //  const totalDamage = records.value.reduce((total, current_record) => {
+                    //    return total + Object.values(current_record.actors).reduce((acc, actor) => acc + actor.damage, 0);
+                   // }, 0);
+
+                    // Calculate percentage
+                   // const dmgPercent = totalDamage === 0 ? 0 : ((damage / totalDamage) * 100).toFixed(1);
+
+                   // return `${dmgPercent}%`;
+              //  };
+
                 Vue.onMounted(() => {
                     update_period = 1000;
                     create_socket();
@@ -560,6 +605,7 @@
                     remove_record,
                     actor_dialog,
                     set_actor_dialog,
+                    calculatePercent,
                 }
             }
         })
